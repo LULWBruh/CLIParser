@@ -4,6 +4,13 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+
+        <PackageId>LULWBruh.CliParser</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>LULWBruh</Authors>
+        <Description>Easy library for cli parsing</Description>
+        <RepositoryUrl>https://github.com/LULWBruh/CliParser</RepositoryUrl>
     </PropertyGroup>
+    
 
 </Project>
