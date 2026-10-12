@@ -13,8 +13,11 @@ public abstract class ParseResult {
 
 public sealed class ParserInfo : ParseResult {
     public string VersionString { get; private init; }
-    internal ParserInfo(string helpString, string versionString) : base(helpString) {
+    public Exception? ParsingException { get; private init; }
+    public bool WasException => ParsingException is null;
+    internal ParserInfo(string helpString, string versionString, Exception? error=null) : base(helpString) {
         VersionString = versionString;
+        ParsingException = error;
     }
 }
 
@@ -56,9 +59,15 @@ public sealed partial class OptionResult {
     }
     
     public T GetParameter<T>(int index) {
-        if (!IsSet) throw new InvalidOperationException();
-        if (index < 0 || index >= ParameterResults.Count) throw new IndexOutOfRangeException();
-        object result = ParameterResults[index];
+        if (index < 0 || index >= _option.Parameters.Count) throw new IndexOutOfRangeException();
+
+        object result;
+        if (IsSet) {
+            result = ParameterResults[index];
+        }
+        else {
+            result = _option.Parameters[index].DefaultValue;
+        }
 
         if (result is T resultT) return resultT; // including enum
 

@@ -47,9 +47,9 @@ public sealed partial class Parser {
             _parsedData.Validate(_conflicts, _dependencies);
             return _parsedData;
         }
-        catch {
+        catch (Exception e) {
             if (ErrorReturnsParseInfo) {
-                return new ParserInfo(GenerateHelpString(), GenerateVersionString());
+                return new ParserInfo(GenerateHelpString(), GenerateVersionString(), e);
             }
             throw;
         }

@@ -11,10 +11,14 @@ namespace CliParser;
 public abstract partial class Parameter {
     internal abstract object ParseParameter(string parameter);
     internal abstract string Name();
+    internal abstract object DefaultValue { get; }
 }
 
 public sealed partial class BoolParameter {
-    internal BoolParameter() {
+    internal bool _defaultValue;
+
+    internal BoolParameter(bool defaultValue) {
+        _defaultValue = defaultValue;
     }
 
     internal override object ParseParameter(string parameter) {
@@ -24,9 +28,12 @@ public sealed partial class BoolParameter {
     internal override string Name() {
         return "<bool>";
     }
+
+    internal override object DefaultValue => _defaultValue;
 }
 
 public sealed partial class EnumParameter {
+    private object _defaultValue;
     internal bool CaseSensitive { get; init; }
     internal List<string> Values { get; init; }
 
@@ -37,6 +44,8 @@ public sealed partial class EnumParameter {
             Values = Enum.GetNames(enumType).Select(x => x.ToLower()).ToList();
         else
             Values = Enum.GetNames(enumType).ToList();
+
+        _defaultValue = enumType.GetEnumNames()[0];
     }
 
     internal EnumParameter(string[] values) {
@@ -44,6 +53,8 @@ public sealed partial class EnumParameter {
             Values = values.Select(x => x.ToLower()).ToList();
         else
             Values = values.ToList();
+        
+        _defaultValue =  values[0];
     }
 
     internal override object ParseParameter(string parameter) {
@@ -65,17 +76,21 @@ public sealed partial class EnumParameter {
         
         return output.Append("]").ToString();
     }
+
+    internal override object DefaultValue => _defaultValue;
 }
 
 public sealed partial class IntParameter {
     internal int MinValue { get; init; }
     internal int MaxValue { get; init; }
     internal Func<int, bool> CustomValidation { get; init; }
+    internal int _defaultValue;
 
-    internal IntParameter(int minValue, int maxValue, Func<int, bool>? customValidation) {
+    internal IntParameter(int minValue, int maxValue, Func<int, bool>? customValidation, int defaultValue) {
         MinValue = minValue;
         MaxValue = maxValue;
         CustomValidation = customValidation is null ? x => true : customValidation;
+        _defaultValue = defaultValue;
     }
 
     internal override object ParseParameter(string parameter) {
@@ -92,16 +107,20 @@ public sealed partial class IntParameter {
     internal override string Name() {
         return "<int>";
     }
+
+    internal override object DefaultValue => _defaultValue;
 }
 
 public sealed partial class StringParameter {
     private const string WILDCARD = ".*";
     internal Func<string, bool> CustomValidation { get; init; }
     internal string RegexPattern { get; init; }
+    internal string _defaultValue;
 
-    internal StringParameter(Func<string, bool>? customValidation, string? regexValidation) {
+    internal StringParameter(Func<string, bool>? customValidation, string? regexValidation, string defaultValue) {
         CustomValidation = customValidation is null ? x => true : customValidation;
         RegexPattern = regexValidation is null ? WILDCARD : regexValidation;
+        _defaultValue = defaultValue;
     }
 
     internal override object ParseParameter(string parameter) {
@@ -117,15 +136,19 @@ public sealed partial class StringParameter {
     internal override string Name() {
         return "<string>";
     }
+
+    internal override object DefaultValue => _defaultValue;
 }
 
 public sealed partial class CustomParameter<T> {
     internal Func<string, T> ParsingFunction { get; init; }
     internal Func<T, bool> CustomValidation { get; init; }
+    internal T? _defaultValue;
 
-    internal CustomParameter(Func<string, T> parsingFunction, Func<T, bool>? customValidation) {
+    internal CustomParameter(Func<string, T> parsingFunction, Func<T, bool>? customValidation, T? defaultValue) {
         ParsingFunction = parsingFunction;
         CustomValidation = customValidation is null ? x => true : customValidation;
+        _defaultValue = defaultValue;
     }
 
     internal override object ParseParameter(string parameter) {
@@ -139,4 +162,6 @@ public sealed partial class CustomParameter<T> {
     internal override string Name() {
         return $"<{typeof(T).ToString()}>";
     }
+
+    internal override object DefaultValue => _defaultValue;
 }

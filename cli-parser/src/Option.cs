@@ -42,8 +42,7 @@ public sealed class OptionBuilder {
         if (alias == Parser.VersionLongAlias || alias == Parser.HelpLongAlias || alias == "" || !char.IsLetter(alias[0]))
             throw new BadAliasException(alias);
         foreach (var ch in alias) {
-            // if ((!char.IsLetter(ch) && !char.IsNumber(ch)) || !char.IsAscii(ch)) {
-            if (!char.IsLetterOrDigit(ch) && ch != '-') { 
+            if ((!char.IsLetter(ch) && !char.IsNumber(ch) && ch != '-') || !char.IsAscii(ch)) {
                 throw new BadAliasException(alias);
             }
         }
