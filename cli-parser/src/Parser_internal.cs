@@ -21,9 +21,9 @@ public sealed partial class Parser {
 
     // public bool AllPlainAfterFirst { get;  set; } = true;
 
-    private ParsedData _parsedData;
+    private ParsedData _parsedData = null!;
     private ParsingState _state = ParsingState.Default;
-    private OptionResult _parsedOption;
+    private OptionResult _parsedOption = null!;
     
     public ParseResult Parse(IEnumerable<string> args) {
         var enumerable = args as string[] ?? args.ToArray();

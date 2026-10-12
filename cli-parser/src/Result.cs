@@ -87,7 +87,7 @@ public sealed partial class OptionResult {
             result = GetParameter<T>(index);
             return true;
         }
-        catch (Exception e) {
+        catch {
             return false;
         }
     }
