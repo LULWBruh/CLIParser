@@ -29,27 +29,32 @@ public sealed partial class Parser {
         var enumerable = args as string[] ?? args.ToArray();
         
         if (!enumerable.Any() && ShowHelpOnEmptyArguments) {
-            return new ParserInfo(GenerateHelpString(), GenerateVersionString());
+            return new ParserInfo(ParserInfoType.Help, GenerateHelpString(), GenerateVersionString());
+        }
+
+        if (enumerable.Any(x =>
+                x == "-" + HelpShortAlias.ToString()
+                || x == "--" + HelpLongAlias)
+            ) {
+            return new ParserInfo(ParserInfoType.Help, GenerateHelpString(), GenerateVersionString());
         }
 
         if (enumerable.Any(x =>
                 x == "-" + VersionShortAlias.ToString()
-                || x == "-" + HelpShortAlias.ToString()
-                || x == "--" + VersionLongAlias
-                || x == "--" + HelpLongAlias)
+                || x == "--" + VersionLongAlias)
             ) {
-            return new ParserInfo(GenerateHelpString(), GenerateVersionString());
+            return new ParserInfo(ParserInfoType.Version, GenerateHelpString(), GenerateVersionString());
         }
 
         try {
-            _parsedData = new ParsedData(_options, GenerateHelpString());
+            _parsedData = new ParsedData(_options);
             StartParsing(enumerable);
             _parsedData.Validate(_conflicts, _dependencies);
             return _parsedData;
         }
         catch (Exception e) {
             if (ErrorReturnsParseInfo) {
-                return new ParserInfo(GenerateHelpString(), GenerateVersionString(), e);
+                return new ParserInfo(ParserInfoType.Exception, GenerateHelpString(), GenerateVersionString(), e);
             }
             throw;
         }

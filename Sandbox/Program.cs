@@ -23,38 +23,43 @@ class Program {
         parser.Version = "2.1.0-stable";
         parser.AppName = "Sandbox";
         parser.ErrorReturnsParseInfo = true;
+        
         parser.AddOption(
-            Option.Builder("graphics")
-                .AddDescription("Some random description")
-                .AddShortAlias('g')
-                .AddLongAlias("graphics")
-                .AddParameter(Parameter.BoolParameter())
+            Option.Builder("a")
+                .AddShortAlias('a')
                 .AddParameter(Parameter.IntParameter())
-                .AddParameter(Parameter.EnumParameter(typeof(Resolution), caseSensitive: true))
-            );
-        // parser.AddOption(
-        //     Option.Builder("asd")
-        //         .Required()
-        //         .AddShortAlias('j')
-        //         .AddLongAlias("jkljkl")
-        //     );
-        // parser.AddDependency("graphics", "asd");
-        // parser.AddConflict("graphics", "asd");
+        );
+        parser.AddOption(
+            Option.Builder("b")
+                .AddShortAlias('b')
+        );
+        parser.AddOption(
+            Option.Builder("c")
+                .AddShortAlias('c')
+        );
         
-        // Console.WriteLine(parser.GenerateVersionString());
-        // Console.WriteLine(parser.GenerateHelpString());
+        // parser.AddDependency("a", "c");
+        parser.AddConflict("a", "c");
+        var result = parser.Parse("-a 1 -b -H");
         
-        var result = parser.Parse("");
+        
         if (result is ParsedData pd) {
-            pd.GetOption("graphics");
+            pd.GetOption("b");
         }
         else {
             var pi = (ParserInfo)result;
-            Console.WriteLine($"Version: {pi.VersionString}");
-            Console.WriteLine($"Help string:\n{pi.HelpString}");
-            
+            Console.WriteLine($"Info type: {pi.InfoType.ToString()}");
+            switch (pi.InfoType) {
+                case ParserInfoType.Help:
+                    Console.WriteLine(pi.HelpString);
+                    break;
+                case ParserInfoType.Version:
+                    Console.WriteLine(pi.VersionString);
+                    break;
+                case ParserInfoType.Exception:
+                    Console.WriteLine(pi.ParsingException!.Message);
+                    break;
+            }
         }
-
-
     }
 }

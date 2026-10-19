@@ -69,23 +69,27 @@ public sealed partial class Parser {
         AddConflict(a.Name, b.Name, options.Select(o => o.Name).ToArray());
     }
 
-    public void AddDependency(string dependentName, string dependencyName) {
+    public void AddDependency(string dependentName, params string[] dependencies) {
         if (!_options.ContainsKey(dependentName)) {
             throw new OptionNotFoundException(dependentName);
         }
 
-        if (!_options.ContainsKey(dependencyName)) {
-            throw new OptionNotFoundException(dependencyName);
-        }
+        foreach (var dependencyName in dependencies) {
+            if (!_options.ContainsKey(dependencyName)) {
+                throw new OptionNotFoundException(dependencyName);
+            }
 
-        if (_dependencies.ContainsKey(dependentName)) {
-            _dependencies[dependentName].Add(dependencyName);
+            if (_dependencies.ContainsKey(dependentName)) {
+                _dependencies[dependentName].Add(dependencyName);
+            }
+            else {
+                var newDependencies = new HashSet<string>();
+                newDependencies.Add(dependencyName);
+                _dependencies[dependentName] = newDependencies;
+            }
+            
         }
-        else {
-            var newDependencies = new HashSet<string>();
-            newDependencies.Add(dependencyName);
-            _dependencies[dependentName] = newDependencies;
-        }
+        
     }
 
     public void AddDependency(Option dependent, Option dependency) {
@@ -103,6 +107,12 @@ public sealed partial class Parser {
     public string GenerateHelpString() {
         StringBuilder sb = new();
         sb.AppendLine(AppName is not null ? AppName + " options:" : "Options:");
+        
+        sb.AppendLine("  version:");
+        sb.AppendLine($"    Aliases:    -{VersionShortAlias} --{VersionLongAlias}");
+        sb.AppendLine("  help:");
+        sb.AppendLine($"    Aliases:    -{HelpShortAlias} --{HelpLongAlias}");
+        sb.AppendLine();
         
         foreach (var (key, value) in _options) {
             sb.AppendLine("  " + key + (value.Required ? " (required):" : ":"));
@@ -127,24 +137,26 @@ public sealed partial class Parser {
                 sb.AppendLine();
             }
 
-            sb.Append("    Dependencies: ");
             if (_dependencies.TryGetValue(key, out var dependencies)) {
+                sb.Append("    Dependencies: ");
                 foreach (var dependency in dependencies) {
                     sb.Append(" " + dependency);
                 }
                 sb.AppendLine();
+                sb.AppendLine();
+            }
+        }
+
+        if (_conflicts.Count > 0) {
+            sb.Append("\nConflicting option groups: ");
+            foreach (var conflicts in _conflicts) {
+                sb.Append("\n  ");
+                foreach (var conflict in conflicts) {
+                    sb.Append(conflict + " ");
+                }
             }
             sb.AppendLine();
         }
-
-        sb.Append("\nConflicting option groups: ");
-        foreach (var conflicts in _conflicts) {
-            sb.Append("\n  ");
-            foreach (var conflict in conflicts) {
-                sb.Append(conflict + " ");
-            }
-        }
-        sb.AppendLine();
 
         return sb.ToString();
     }

@@ -3,28 +3,32 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace CliParser;
 
-public abstract class ParseResult {
-    internal ParseResult(string helpString) {
-        HelpString = helpString;
-    }
+public abstract class ParseResult { }
 
-    public string HelpString { get; private init; }
+public enum ParserInfoType {
+    Help,
+    Version,
+    Exception
+    
 }
 
 public sealed class ParserInfo : ParseResult {
     public string VersionString { get; private init; }
+    public string HelpString { get; private init; }
     public Exception? ParsingException { get; private init; }
-    public bool WasException => ParsingException is null;
-    internal ParserInfo(string helpString, string versionString, Exception? error=null) : base(helpString) {
+    public ParserInfoType InfoType { get; private init; }
+    internal ParserInfo(ParserInfoType infoType, string helpString, string versionString, Exception? error=null) {
+        InfoType = infoType;
         VersionString = versionString;
         ParsingException = error;
+        HelpString =  helpString;
     }
 }
 
 public sealed partial class ParsedData : ParseResult {
     internal Dictionary<string, OptionResult> Options { get; private init; } = new();
 
-    internal ParsedData(Dictionary<string, Option> options, string helpString) : base(helpString) {
+    internal ParsedData(Dictionary<string, Option> options) {
         AddAllOptions(options);
     }
 
